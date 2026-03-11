@@ -1,0 +1,23 @@
+# Use Python 3.10
+FROM python:3.10-slim
+
+# Working Directory
+WORKDIR /app
+
+# Install System Deps (SimPy might need build tools sometimes, but usually pure python)
+RUN apt-get update && apt-get install -y gcc
+
+# Copy Requirements
+COPY requirements.txt .
+# Add FastAPI/Uvicorn/OpenAI explicitly if not in requirements.txt (Safe bet)
+RUN pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir fastapi uvicorn sse-starlette openai
+
+# Copy Code
+COPY backend/ backend/
+
+# Expose Port
+EXPOSE 8000
+
+# Run Command
+CMD ["uvicorn", "backend.server.main:app", "--host", "0.0.0.0", "--port", "8000"]

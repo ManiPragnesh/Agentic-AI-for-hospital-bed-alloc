@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+logs/
+*.log
+sim_logs.csv
+node_modules/
+.next/
+out/
+build/
+dist/
+.env
+.env.local
+.DS_Store
+ppo_hospital_admin.zip
+comparison_results.png

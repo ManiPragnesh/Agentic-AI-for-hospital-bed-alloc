@@ -1,0 +1,132 @@
+# Project Documentation: Agentic AI for Hospital Bed & Resource Optimization
+
+## 1. Executive Summary
+This project is an **Agentic AI Decision Support System** designed to optimize hospital operations. It integrates a **Discrete Event Simulation (DES)** with **Reinforcement Learning (RL)** and **Large Language Models (LLM)** to manage patient flow, bed allocation, and nurse staffing in real-time.
+
+**Core Objective:** Minimize patient wait times, maximize bed utilization, and ensure safe staff-to-patient ratios.
+
+---
+
+## 2. Technical Stack
+- **Backend:** Python 3.9+, SimPy (Simulation), Gymnasium (RL Environment), Stable-Baselines3 (PPO Algorithm), FastAPI (API Layer).
+- **Frontend:** Next.js 14, React, Tailwind CSS, Recharts (Visualization), Lucide React (Icons).
+- **AI/ML:** OpenAI GPT-3.5 Turbo (Strategic Advisor), PPO (Proximal Policy Optimization) for operational control.
+- **Infrastructure:** Docker support (Dockerfile.backend, Dockerfile.frontend).
+
+---
+
+## 3. Backend Architecture (`/backend`)
+
+The backend is structured into modular components: Simulation, Agents, RL, and Server.
+
+### 3.1 Simulation Engine (`backend/simulation`)
+Powered by `simpy`, the simulation models a hospital with distinct departments and dynamic processes.
+
+*   **`HospitalSim` (`env.py`)**: The central orchestrator.
+    *   **Departments**:
+        *   **Emergency**: 10 Beds, High Staff Allocation (30%).
+        *   **ICU**: 10 Beds, Medium Staff Allocation (20%), High Acuity Threshold (0.8).
+        *   **General Ward**: 50 Beds, High Staff Allocation (50%).
+    *   **Processes**:
+        *   `patient_generator`: Generates patients with `severity`, `criticality`, and `care_type` using a Poisson process.
+        *   `triage_control_loop`: Runs every 30 mins to check General Ward patients. If `criticality > 0.8`, they are escalated to ICU.
+        *   `shift_rotation_loop`: Updates staff availability based on Day/Night cycles (Day: 100% Staff, Night: 60% Staff).
+        *   `department_allocation_loop`: Manages bed assignment in each department, respecting Staff-to-Patient ratios (< 4.0).
+*   **`Department` (`department.py`)**: Models a specific ward with a `simpy.Resource` for beds, a waiting `queue`, and a list of active `patients`.
+*   **`Monitor` (`monitor.py`)**: Tracks real-time KPIs (HSI - Hospital Stability Index, Revenue, Costs, Wait Times) and logs events.
+
+### 3.2 Agentic Roles (`backend/agents`)
+Autonomous agents manage specific aspects of the hospital:
+
+*   **`AdmissionAgent` (`admission_agent.py`)**:
+    *   **Modes**: `RULE` (Heuristic) or `RL` (Reinforcement Learning).
+    *   **Rule Logic**: Checks bed availability and staff safety. If full or unsafe, queues the patient.
+*   **`StaffAgent` (`staff_agent.py`)**:
+    *   Calculates shift modifiers (Day/Night).
+    *   Enforces safety ratios (Max 4 patients per nurse).
+*   **`LLMAdvisor` (`llm_advisor.py`)**:
+    *   Uses **OpenAI GPT-3.5-Turbo**.
+    *   Analyzes flattened metrics (Queues, Occupancy, Financials) to provide strategic text advice via streaming API.
+
+### 3.3 Reinforcement Learning (`backend/rl`)
+A custom Gym environment allows an AI agent to learn optimal admission strategies.
+
+*   **`HospitalGymEnv` (`gym_env.py`)**:
+    *   **Observation Space (8 Dim)**:
+        *   Total Waiting, Bed Occupancy %, Staff Availability.
+        *   Queue Lengths (General, ICU, Emergency).
+        *   Current Patient Severity & Criticality.
+    *   **Action Space (6 Discrete)**:
+        *   0: ADMIT_General
+        *   1: ADMIT_ICU
+        *   2: ADMIT_EMERGENCY
+        *   3: TRANSFER (Redirect)
+        *   4: DISCHARGE (Force early discharge)
+        *   5: CALL_STAFF (Request extra shift)
+    *   **Reward Function**:
+        *   `+1.0`: Successful Discharge.
+        *   `-100.0`: Patient Death or Critical Failure.
+        *   `-10.0`: Excessive Wait Time (> 4 hours).
+        *   `-50.0`: Risky ICU Admission when full.
+
+### 3.4 API Layer (`backend/server/main.py`)
+FastAPI server exposing 4 key endpoints:
+
+1.  **`POST /simulation/reset`**: Resets the simulation with custom config (Beds, Staff, RL Mode).
+2.  **`POST /simulation/step`**: Advances simulation by `N` hours. Handles synchronization with the RL agent if enabled.
+3.  **`GET /metrics`**: Returns snapshot of:
+    *   **Financials**: Revenue, Cost, Profit.
+    *   **Departments**: Queues, Occupancy, Staffing.
+    *   **Global**: HSI (Hospital Stability Index), Safety Violations.
+    *   **Logs**: Recent 10 events.
+4.  **`POST /analyze/advisor`**: Streams strategic advice from the LLM Advisor.
+
+---
+
+## 4. Frontend Application (`/frontend`)
+
+A real-time dashboard built with Next.js 14 (`app` directory router).
+
+*   **Dashboard (`app/page.tsx`)**:
+    *   **Polling Mechanism**: Fetches `/metrics` every 2 seconds.
+    *   **Interactive Controls**: Reset, Start/Pause, Step +1h.
+    *   **Visualizations**:
+        *   **KPI Cards**: Time Elapsed, Staff Strain (Green/Red based on safety), Total Patients.
+        *   **Queue Trends**: `LiveChart` component showing historical queue lengths.
+        *   **Hospital Map**: `HospitalMap` component visualizing occupancy in different wards.
+        *   **Event Log**: Scrollable list of recent actions (Admissions, Discharges, Warnings).
+
+---
+
+## 5. Implementation Status
+
+| Component | Status | Notes |
+| :--- | :---: | :--- |
+| **Simulation Engine** | ✅ **Complete** | Full department logic, Triage, and Shift cycles implemented. |
+| **RL Environment** | ✅ **Complete** | `HospitalGymEnv` fully integrated with SimPy. |
+| **PPO Agent** | ✅ **Complete** | Code availability for training & inference (`train_ppo.py`, `models/`). |
+| **LLM Advisor** | ✅ **Complete** | Streaming response via OpenAI API implemented. |
+| **API** | ✅ **Complete** | All endpoints tested and functional. |
+| **Frontend** | ✅ **Complete** | Real-time dashboard with polling and visualization. |
+
+## 6. How to Run
+
+### Backend
+```bash
+cd backend
+# Install dependencies
+pip install -r requirements.txt
+# Run Server
+python server/main.py
+```
+*Server starts at `http://localhost:8000`*
+
+### Frontend
+```bash
+cd frontend
+# Install dependencies
+npm install
+# Run Dev Server
+npm run dev
+```
+*Dashboard accessible at `http://localhost:3000`*
