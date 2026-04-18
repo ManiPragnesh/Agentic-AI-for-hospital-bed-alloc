@@ -20,7 +20,7 @@ def run_simulation(mode='RULE', duration=200):
     hospital.admission_agent.mode = mode
     
     if mode == 'RL':
-        model_path = "ppo_hospital_admin.zip"
+        model_path = os.path.join(os.path.dirname(__file__), "../src/rl/models/ppo_hospital_v1.zip")
         if os.path.exists(model_path):
             model = PPO.load(model_path)
             

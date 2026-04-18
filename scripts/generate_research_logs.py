@@ -7,7 +7,7 @@ import builtins
 # Path Hack
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from backend.rl.gym_env import HospitalGymEnv
+from backend.src.rl.gym_env import HospitalGymEnv
 
 # Global to keep original print
 original_print = builtins.print
@@ -122,7 +122,7 @@ def run_research_episode(run_num, policy_type, model=None):
 def run_all():
     builtins.print = silent_print
     
-    model_path = "backend/rl/models/ppo_hospital_v1.zip"
+    model_path = "backend/src/rl/models/ppo_hospital_v1.zip"
     model = PPO.load(model_path) if os.path.exists(model_path) else None
     
     all_fcfs = []
