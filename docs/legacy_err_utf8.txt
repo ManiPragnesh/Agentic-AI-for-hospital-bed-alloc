@@ -1,0 +1,161 @@
+python : C:\Users\DELL\
+Desktop\Ag AI\.venv\Lib
+\site-packages\gymnasiu
+m\spaces\box.py:236: 
+UserWarning: 
+[33mWARN: Box low's 
+precision lowered by 
+casting to float32, 
+current 
+low.dtype=float64[0m
+At line:1 char:55
++ ... ivate.ps1; 
+$env:PYTHONPATH='.'; 
+python main.py --train 
+> err.txt 2>&1
++                      
+               ~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (C:\Users\DELL   
+ \D...ype=float64[    
+0m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  gym.logger.warn(
+C:\Users\DELL\Desktop\A
+g AI\.venv\Lib\site-pac
+kages\gymnasium\spaces\
+box.py:306: 
+UserWarning: 
+[33mWARN: Box high's 
+precision lowered by 
+casting to float32, 
+current 
+high.dtype=float64[0m
+  gym.logger.warn(
+Using cpu device
+Wrapping the env with a `Monitor` wrapper
+Wrapping the env in a DummyVecEnv.
+Starting PPO Training...
+Traceback (most recent 
+call last):
+  File "C:\Users\DELL\D
+esktop\Ag AI\hospital-o
+ptimization-ai\main.py"
+, line 28, in <module>
+    main()
+  File "C:\Users\DELL\D
+esktop\Ag AI\hospital-o
+ptimization-ai\main.py"
+, line 20, in main
+    train_agent()
+  File "C:\Users\DELL\D
+esktop\Ag AI\hospital-o
+ptimization-ai\training
+\train.py", line 42, 
+in train_agent
+    agent.model.learn(t
+otal_timesteps=cfg.TOTA
+L_TIMESTEPS, 
+callback=eval_callback)
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\ppo\ppo.py", 
+line 311, in learn
+    return 
+super().learn(
+           
+^^^^^^^^^^^^^^
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\common\on_poli
+cy_algorithm.py", line 
+324, in learn
+    continue_training 
+= self.collect_rollouts
+(self.env, callback, 
+self.rollout_buffer, n_
+rollout_steps=self.n_st
+eps)
+                       
+ ^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\common\on_poli
+cy_algorithm.py", line 
+218, in 
+collect_rollouts
+    new_obs, rewards, 
+dones, infos = env.step
+(clipped_actions)
+                       
+              ^^^^^^^^^
+^^^^^^^^^^^^^^^^
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\common\vec_env
+\base_vec_env.py", 
+line 222, in step
+    return 
+self.step_wait()
+           
+^^^^^^^^^^^^^^^^
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\common\vec_env
+\dummy_vec_env.py", 
+line 59, in step_wait
+    obs, self.buf_rews[
+env_idx], terminated, 
+truncated, self.buf_inf
+os[env_idx] = self.envs
+[env_idx].step(  # 
+type: 
+ignore[assignment]
+                       
+                       
+                       
+             ^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DELL\D
+esktop\Ag AI\.venv\Lib\
+site-packages\stable_ba
+selines3\common\monitor
+.py", line 94, in step
+    observation, 
+reward, terminated, 
+truncated, info = 
+self.env.step(action)
+                       
+                       
+         
+^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\DELL\D
+esktop\Ag AI\hospital-o
+ptimization-ai\environm
+ent\hospital_env.py", 
+line 130, in step
+    wait_time = patient
+.wait_duration(sim.env.
+now)
+                ^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
+^^^^
+TypeError: 'float' 
+object is not callable

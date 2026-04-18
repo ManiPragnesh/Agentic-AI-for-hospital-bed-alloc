@@ -30,7 +30,7 @@ export default function SettingsPage() {
 
     const applyConfig = async () => {
         try {
-            const res = await fetch('http://localhost:8001/simulation/reset', {
+            const res = await fetch('http://127.0.0.1:8000/api/simulation/reset', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
@@ -43,7 +43,7 @@ export default function SettingsPage() {
 
     const admitPatient = async () => {
         try {
-            const res = await fetch('http://localhost:8001/simulation/admit', {
+            const res = await fetch('http://127.0.0.1:8000/api/simulation/admit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(patient)

@@ -16,6 +16,7 @@ def main():
                 cwd=os.path.join(os.path.dirname(__file__), "..", "frontend"),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
+                shell=True,
             )
             # Small delay to allow Next.js to start
             time.sleep(2)
@@ -24,7 +25,7 @@ def main():
             sys.executable,
             "-m",
             "uvicorn",
-            "backend.server.main:app",
+            "backend.src.api:app",
             "--host",
             "0.0.0.0",
             "--port",

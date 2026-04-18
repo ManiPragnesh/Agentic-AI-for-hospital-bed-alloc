@@ -5,70 +5,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
 import { Activity, Users } from "lucide-react";
+import { AdvisorPanel } from "@/components/AdvisorPanel";
 
 export default function InsightsPage() {
-  const [apiKey, setApiKey] = useState("");
-  const [advice, setAdvice] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<any | null>(null);
-  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
 
   const loadMetrics = async () => {
     try {
-      const res = await fetch(`/api/metrics`);
+      const res = await fetch(`http://127.0.0.1:8000/api/metrics`);
       const data = await res.json();
       setMetrics(data);
     } catch {
-      // ignore rendering error state here; advisor can still work
+      // ignore rendering error
     }
   };
 
   useEffect(() => {
-    const savedAdvice = typeof window !== "undefined" ? localStorage.getItem("advisor:last") : null;
-    const savedAt = typeof window !== "undefined" ? localStorage.getItem("advisor:last_at") : null;
-    if (savedAdvice) setAdvice(savedAdvice);
-    if (savedAt) setLastSavedAt(savedAt);
     loadMetrics();
   }, []);
-
-  const fetchAdvice = async () => {
-    setAdvice("");
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/analyze/advisor`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ api_key: apiKey }),
-      });
-      if (!res.body) {
-        throw new Error("Streaming not supported by the browser.");
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value);
-        setAdvice((prev) => prev + chunk);
-      }
-      const ts = new Date().toISOString();
-      localStorage.setItem("advisor:last", advice);
-      localStorage.setItem("advisor:last_at", ts);
-      setLastSavedAt(ts);
-      loadMetrics();
-    } catch (e: any) {
-      setError(e?.message || "Failed to stream advisor output");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const resetScenario = async (scenario: "NORMAL" | "FLU_SURGE" | "MASS_CASUALTY" | "STAFF_SHORTAGE") => {
     setError(null);
     try {
-      await fetch(`/api/simulation/reset`, {
+      await fetch(`http://127.0.0.1:8000/api/simulation/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenario }),
@@ -82,13 +43,18 @@ export default function InsightsPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-black p-8">
       <div className="max-w-6xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-            Insights
-          </h1>
-          <p className="mt-2 text-slate-600 dark:text-slate-300">
-            This page is prepared for analytical insights and advisor outputs.
-          </p>
+        <div className="flex justify-between items-end">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Agentic Insights
+            </h1>
+            <p className="mt-2 text-slate-600 dark:text-slate-300">
+              Real-time resource optimization strategies and local AI analysis.
+            </p>
+          </div>
+          <div className="text-xs bg-slate-200 dark:bg-slate-800 px-3 py-1.5 rounded-lg font-mono text-slate-500">
+            OFFLINE MODE ENABLED
+          </div>
         </div>
 
         {/* KPI Row */}
@@ -118,87 +84,51 @@ export default function InsightsPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Advisor Strategy (Live)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-end gap-3 mb-4">
-                <div className="flex-1">
-                  <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">
-                    OpenAI API Key
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="sk-..."
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-400"
-                  />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Insights Area */}
+          <div className="lg:col-span-2 space-y-6">
+             <AdvisorPanel />
+             
+             <Card>
+              <CardHeader>
+                <CardTitle>Operational Health</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-slate-100 dark:bg-slate-900 rounded-lg">
+                    <p className="text-sm font-medium">Departmental Efficiency</p>
+                    <p className="text-xs text-slate-500 mt-1">Analyzing cross-ward bed availability vs incoming Poisson arrival distribution.</p>
+                  </div>
                 </div>
-                <Button onClick={fetchAdvice} disabled={loading || !apiKey}>
-                  {loading ? "Streaming..." : "Get Advice"}
-                </Button>
-              </div>
-              {error && (
-                <div className="mb-3 text-sm text-red-600">
-                  {error}
-                </div>
-              )}
-              <div className="min-h-[160px] rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-4 text-sm whitespace-pre-wrap">
-                {advice || "Advisor output will appear here..."}
-              </div>
-              {lastSavedAt && (
-                <div className="mt-2 text-xs text-slate-500">
-                  Last saved: {new Date(lastSavedAt).toLocaleString()}
-                </div>
-              )}
-              <p className="mt-2 text-xs text-slate-500">
-                Placeholder content. Add widgets and strategy panels here later.
-              </p>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
+          {/* Sidebar / Scenarios */}
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Operational KPIs</CardTitle>
+                <CardTitle className="text-sm uppercase tracking-wider text-slate-500">Simulation Control</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Placeholder widget for queue lengths, occupancy, and HSI.
-                </p>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-2">
+                  <Button variant="outline" className="justify-start" onClick={() => resetScenario("NORMAL")}>🟢 Normal State</Button>
+                  <Button variant="outline" className="justify-start" onClick={() => resetScenario("FLU_SURGE")}>🟡 Flu Surge</Button>
+                  <Button variant="outline" className="justify-start" onClick={() => resetScenario("MASS_CASUALTY")}>🟠 Mass Casualty</Button>
+                  <Button variant="outline" className="justify-start" onClick={() => resetScenario("STAFF_SHORTAGE")}>🔴 Staff Shortage</Button>
+                </div>
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <Button className="w-full" size="sm" variant="default" onClick={loadMetrics}>Sync Latest Metrics</Button>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900">
               <CardHeader>
-                <CardTitle>Upcoming Actions</CardTitle>
+                <CardTitle className="text-sm text-indigo-600 dark:text-indigo-400">Agent Note</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ul className="list-disc pl-5 text-sm text-slate-600 dark:text-slate-400">
-                  <li>Staffing optimization suggestions</li>
-                  <li>Discharge prioritization candidates</li>
-                  <li>Scenario planning shortcuts</li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Scenarios</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" onClick={() => resetScenario("NORMAL")}>Normal</Button>
-                  <Button variant="secondary" onClick={() => resetScenario("FLU_SURGE")}>Flu Surge</Button>
-                  <Button variant="secondary" onClick={() => resetScenario("MASS_CASUALTY")}>Mass Casualty</Button>
-                  <Button variant="secondary" onClick={() => resetScenario("STAFF_SHORTAGE")}>Staff Shortage</Button>
-                </div>
-                <div className="mt-3">
-                  <Button size="sm" variant="outline" onClick={loadMetrics}>Refresh KPIs</Button>
-                </div>
+              <CardContent className="text-xs text-indigo-700 dark:text-indigo-300">
+                PPO-based Reinforcement Learning is active in the background, managing admission priorities based on the learned reward function.
               </CardContent>
             </Card>
           </div>

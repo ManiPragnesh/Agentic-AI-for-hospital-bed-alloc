@@ -5,3 +5,7 @@ pandas
 streamlit
 matplotlib
 plotly
+fastapi
+uvicorn
+sse-starlette
+openai

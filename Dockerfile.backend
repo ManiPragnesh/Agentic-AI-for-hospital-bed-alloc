@@ -9,9 +9,8 @@ RUN apt-get update && apt-get install -y gcc
 
 # Copy Requirements
 COPY requirements.txt .
-# Add FastAPI/Uvicorn/OpenAI explicitly if not in requirements.txt (Safe bet)
-RUN pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir fastapi uvicorn sse-starlette openai
+# Install Requirements
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy Code
 COPY backend/ backend/
@@ -20,4 +19,4 @@ COPY backend/ backend/
 EXPOSE 8000
 
 # Run Command
-CMD ["uvicorn", "backend.server.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.src.api:app", "--host", "0.0.0.0", "--port", "8000"]

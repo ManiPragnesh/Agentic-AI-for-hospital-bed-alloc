@@ -1,29 +1,22 @@
 'use client';
 
 import { useState } from 'react';
-import { Send, Bot, Loader2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Send, Bot, Loader2, Globe } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 export function AdvisorPanel() {
-    const [apiKey, setApiKey] = useState('');
     const [response, setResponse] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleAskAI = async () => {
-        if (!apiKey) {
-            setResponse("⚠️ Please enter your OpenAI API Key first.");
-            return;
-        }
-
         setLoading(true);
         setResponse(""); // Clear previous
 
         try {
-            const res = await fetch('http://localhost:8001/analyze/advisor', {
+            const res = await fetch('http://127.0.0.1:8000/api/analyze/advisor', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ api_key: apiKey }),
+                body: JSON.stringify({ api_key: "OFFLINE_MODE" }),
             });
 
             if (!res.body) return;
@@ -38,21 +31,28 @@ export function AdvisorPanel() {
                 setResponse((prev) => prev + chunkValue);
             }
         } catch (e) {
-            setResponse("❌ Error connecting to AI Advisor.");
+            setResponse("❌ Error connecting to Local AI Advisor.");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white shadow-lg overflow-hidden flex flex-col h-[500px]">
+        <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl text-white shadow-lg overflow-hidden flex flex-col h-[500px]">
             <div className="p-6 pb-4 border-b border-white/10">
-                <h3 className="font-bold text-lg flex items-center gap-2">
-                    <Bot className="w-5 h-5" /> AI Strategic Advisor
-                </h3>
-                <p className="text-indigo-100 text-xs mt-1">
-                    Powered by OpenAI GPT-3.5
-                </p>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h3 className="font-bold text-lg flex items-center gap-2">
+                            <Bot className="w-5 h-5" /> Agentic Strategy Engine
+                        </h3>
+                        <p className="text-indigo-100 text-xs mt-1">
+                            Operational Resource Optimization (Offline)
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-1 bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider">
+                        <Globe className="w-3 h-3" /> Local Mode
+                    </div>
+                </div>
             </div>
 
             {/* Chat Area */}
@@ -62,29 +62,26 @@ export function AdvisorPanel() {
                         <ReactMarkdown>{response}</ReactMarkdown>
                     </div>
                 ) : (
-                    <div className="text-center text-white/40 mt-10">
-                        Enter API Key and click "Generate Analysis" to get real-time strategic advice.
+                    <div className="flex flex-col items-center justify-center h-full text-center text-white/40 space-y-4">
+                        <div className="p-4 bg-white/5 rounded-full">
+                            <Bot className="w-8 h-8 opacity-20" />
+                        </div>
+                        <p className="text-xs max-w-[200px]">
+                            Click the button below to generate a real-time strategic analysis of the current hospital state.
+                        </p>
                     </div>
                 )}
             </div>
 
             {/* Controls */}
-            <div className="p-4 bg-black/20 space-y-3">
-                <input
-                    type="password"
-                    placeholder="OpenAI API Key (sk-...)"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="w-full px-3 py-2 bg-black/20 border border-white/10 rounded-lg text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-white/50"
-                />
-
+            <div className="p-4 bg-black/20">
                 <button
                     onClick={handleAskAI}
                     disabled={loading}
-                    className="w-full py-2 bg-white text-indigo-600 hover:bg-indigo-50 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-white text-indigo-700 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2"
                 >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    {loading ? 'Analyzing...' : 'Generate Analysis'}
+                    {loading ? 'Analyzing Hospital State...' : 'Generate Strategic Analysis'}
                 </button>
             </div>
         </div>

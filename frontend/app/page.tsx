@@ -30,11 +30,11 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [history, setHistory] = useState<ChartPoint[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+  const API_BASE = "http://127.0.0.1:8000";
 
   const fetchMetrics = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/metrics`);
+      const res = await fetch(`http://127.0.0.1:8000/api/metrics`);
       const data = await res.json();
       setMetrics(data);
 
@@ -57,7 +57,7 @@ export default function Dashboard() {
   };
 
   const stepSim = async () => {
-    await fetch(`${API_BASE}/api/simulation/step`, {
+    await fetch(`http://127.0.0.1:8000/api/simulation/step`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hours: 1 })
@@ -66,7 +66,7 @@ export default function Dashboard() {
   };
 
   const resetSim = async () => {
-    await fetch(`${API_BASE}/api/simulation/reset`, { method: 'POST' });
+    await fetch(`http://127.0.0.1:8000/api/simulation/reset`, { method: 'POST' });
     fetchMetrics();
     setHistory([]);
   }
@@ -91,7 +91,7 @@ export default function Dashboard() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Real-time AI Simulation Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Hospital AI Dashboard <span className="text-xs text-slate-400">v1.2-Direct</span></h1>
         </div>
         <div className="flex gap-2">
           <Link href="/settings">
